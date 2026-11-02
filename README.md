@@ -1,109 +1,66 @@
-# Pomodoro PWA
+# Pomodoro Study
 
-Aplicação web baseada na técnica Pomodoro para gerenciamento de foco e produtividade. Desenvolvida como Progressive Web App (PWA), permite instalação no dispositivo e funcionamento offline.
+PWA de estudos em HTML, CSS e JavaScript, sem dependências de runtime. Quatro páginas: Foco, Plano de estudos, Progresso e Ambientes. Identidade C — Recorte, com maçã e relógio.
 
-## Funcionalidades
+## Executar
 
-**Temporizador**
-- Ciclos configuráveis de Pomodoro, pausa curta e pausa longa
-- Anel de progresso animado com marcações de tempo
-- Alternância automática entre foco e pausa (auto-avançar)
-- Indicador de sessão e pontos de progresso do ciclo
-- Alarme sonoro ao fim de cada sessão
-- Notificações do sistema (com permissão)
-- Atalhos de teclado: `Espaço` inicia/pausa · `R` reinicia · `M` abre rádio
+Node 22 ou superior:
 
-**Estatísticas**
-- Gráfico de barras de sessões por dia (últimos 7 ou 30 dias)
-- KPIs: sessões hoje, total histórico e horas de foco acumuladas
-- Streak de dias consecutivos de uso
-- Histórico persistido no `localStorage`
-
-**Rádio ambiente** — via [Radio Browser API](https://www.radio-browser.info/)
-- Busca por gênero ou nome de estação (lofi, jazz, ambient...)
-- Reprodução direta no app com controle de volume
-- Gratuito, sem necessidade de cadastro ou chave de API
-
-**Clima** — via [Open-Meteo](https://open-meteo.com/)
-- Temperatura e condição climática atual exibidas no header
-- Detecta a localização do dispositivo automaticamente
-- Gratuito, sem necessidade de cadastro ou chave de API
-
-**Notion** — via [Notion API](https://developers.notion.com/)
-- Envia um resumo diário para uma página do Notion com sessões, tempo de foco e streak
-- Token e Page ID configurados pelo próprio usuário e salvos localmente
-
-**PWA**
-- Instalável em desktop e mobile via manifest
-- Service Worker com cache-first para assets e network-first para fontes
-- Funciona offline após o primeiro acesso
-
-## Tecnologias
-
-<p align="left">
-  <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/html5/html5-original.svg" width="50" height="50" alt="HTML5"/>
-  <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/css3/css3-original.svg" width="50" height="50" alt="CSS3"/>
-  <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/javascript/javascript-original.svg" width="50" height="50" alt="JavaScript"/>
-</p>
-
-- **HTML5** — Estrutura e semântica
-- **CSS3** — Estilização, variáveis CSS e animações
-- **JavaScript (ES6+)** — Lógica do temporizador, APIs e manipulação do DOM
-- **Web Audio API** — Geração do alarme sonoro
-- **Service Worker** — Cache e suporte offline
-- **Geolocation API** — Localização para o widget de clima
-
-## APIs Externas
-
-| API | Uso | Autenticação |
-|-----|-----|--------------|
-| [Open-Meteo](https://open-meteo.com/) | Clima atual | Nenhuma |
-| [Radio Browser](https://www.radio-browser.info/) | Estações de rádio | Nenhuma |
-| [Notion API](https://developers.notion.com/) | Resumo diário | Token próprio |
-
-## Estrutura do Projeto
-
-```
-pomodoro-pwa/
-│
-├── index.html       # App completo (HTML + CSS + JS em arquivo único)
-├── manifest.json    # Configuração PWA
-├── sw.js            # Service Worker
-└── icons/
-    ├── icon-192.png
-    └── icon-512.png
+```sh
+npm start
+npm test
+npm run check
 ```
 
-## Como Executar Localmente
+Abra http://localhost:4318. Para outra porta: `PORT=4320 npm start`. Para hospedagem estática, publique o conteúdo de `pomodoro-pwa/` em HTTPS. Não é necessário build.
 
-Clone o repositório:
+## Organização
+
+- `src/model.js`: regras do cronômetro, migração, histórico e exportação; funções testáveis sem navegador.
+- `src/app.js`: interação e renderização das quatro páginas.
+- `src/services.js`: rádio, clima e aviso sonoro.
+- `styles.css`: layout responsivo e componentes.
+- `glass.css` e `src/glass.js`: tokens e aprimoramentos visuais progressivos.
+- `sw.js`: cache offline exclusivo do escopo da aplicação. Incremente a versão a cada publicação; feche as abas anteriores para ativar atualizações.
+
+## Comportamento e dados
+
+A pausa longa ocorre após quatro focos completos. Cada sessão guarda sua duração e tarefa originais. Ao retornar de uma aba suspensa, o app reconcilia o intervalo vencido sem inventar ciclos adicionais. Avisos dependem de o navegador manter o app ativo; não há agendamento com o app fechado.
+
+Os dados ficam no armazenamento local. A migração preserva os contadores antigos, cuja duração é desconhecida. As chaves antigas são mantidas. A exportação Markdown permite guardar uma cópia e importar no Notion. A antiga integração via proxy público foi removida; o app não lê nem envia o token antigo.
+
+Rádio e clima precisam de internet. Localização só é solicitada ao clicar em Ver clima. Fotos e fontes são locais e entram no cache offline. Web Locks coordena alterações entre abas nos navegadores que oferecem suporte.
+
+## Design
+
+[Figma: telas editáveis](https://www.figma.com/design/jsSzBLThSs0nURl605Y0HD?node-id=12-2). O arquivo contém a direção editorial anterior ao acabamento glassmorphism; a atualização final no Figma ficou pendente por limite de uso da revisão automática.
+
+Consulte `DESIGN.md` para tokens, decisões, riscos e limites da validação.
+
+## YouTube em Ambientes
+
+Cole um link HTTPS de vídeo, live, Shorts ou playlist no campo YouTube. O player oficial usa reprodução manual, sem chave de API e sem dependências novas. Abrir o YouTube interrompe a rádio; escolher uma rádio fecha o YouTube. Ao sair de Ambientes ou ocultar a aba, o iframe é removido para evitar reprodução escondida. O link permanece no campo enquanto a página estiver aberta. Não há extração de áudio, download ou funcionamento offline; restrições de incorporação são determinadas pelo YouTube e pelo proprietário do vídeo.
+
+Referências: [player oficial](https://developers.google.com/youtube/player_parameters), [políticas](https://developers.google.com/youtube/terms/developer-policies-guide).
+
+### Busca do YouTube por nome
+
+Em Ambientes, abra **Configurar busca do YouTube**, insira uma chave restrita da YouTube Data API v3 e faça a busca. A chave permanece somente no campo da página: não é persistida, incluída no repositório nem armazenada pelo service worker. Recarregar exige inseri-la novamente. A busca envia a chave e o termo diretamente ao Google; miniaturas são carregadas do YouTube.
+
+Restrinja a chave no Google Cloud à YouTube Data API v3 e aos HTTP referrers locais/produção usados pelo app. Uma chave usada no frontend é visível nas requisições: restrições são essenciais. Revogue chaves compartilhadas em chats. Não cole credenciais no código.
+
+Busca manual, seis resultados por envio, timeout de 15 segundos e mensagens para falhas de rede, cota e configuração. A reprodução continua no player oficial visível, sem extrair áudio. Documentação: https://developers.google.com/youtube/data/reference/rest/v3/search/list
+
+## Stack e desenvolvimento
+
+A aplicação usa Vite para desenvolvimento e build da PWA, TypeScript estrito nos módulos de domínio e roteamento, e JavaScript modular na interface em migração. Node.js 22+ executa as ferramentas e os testes nativos. Não há framework de interface: preservamos o HTML/CSS acessível e o service worker existente.
 
 ```bash
-git clone https://github.com/SEU_USUARIO/pomodoro-pwa.git
-cd pomodoro-pwa
+npm install
+npm run start
+npm run check
+npm run build
+npm test
 ```
 
-Execute com Live Server (VS Code), qualquer servidor HTTP local, ou:
-
-```bash
-npx serve .
-```
-
-> O Service Worker e a Geolocation API requerem HTTPS ou `localhost` para funcionar corretamente.
-
-## Configurar o Notion (opcional)
-
-1. Acesse [notion.so/my-integrations](https://www.notion.so/my-integrations) e crie uma nova integration
-2. Copie o **Integration Token** (`secret_...`)
-3. Abra a página do Notion onde quer salvar os resumos
-4. Clique em `···` → **Connections** → conecte sua integration
-5. Copie o **Page ID** da URL da página (os 32 caracteres após o último `/`)
-6. Cole o token e o ID no painel Notion dentro do app e clique em **Salvar configuração**
-
-## Publicar com GitHub Pages
-
-Após fazer push para o repositório, vá em **Settings → Pages → Source: Deploy from branch → `main` → `/root`** e salve. O app ficará disponível em:
-
-```
-https://SEU_USUARIO.github.io/pomodoro-pwa
-```
+O build gera a versão de produção em `dist/`; sirva esse diretório em hospedagem estática compatível com service workers. `npm run preview` abre o build localmente.

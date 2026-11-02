@@ -1,59 +1,39 @@
-const CACHE = "pomodoro-v3";
-const ASSETS = [
-  "./",
-  "./index.html",
-  "./manifest.json",
-  "./icons/icon-192.png",
-  "./icons/icon-512.png",
-];
+const PREFIX = `pomodoro-study:${self.registration.scope}:`;
+const CACHE = `${PREFIX}v8-vite-build`;
+const CORE = ['./', './index.html', './manifest.json'];
+const isLocalAsset = (url) =>
+  url.origin === new URL(self.registration.scope).origin &&
+  new URL(self.registration.scope).pathname.startsWith('/') &&
+  /\/(?:assets|icons)\/[^/]+\.(?:js|css|svg|png|jpe?g|ico|woff2)$/.test(url.pathname);
 
-// Install: cache all assets
-self.addEventListener("install", e => {
-  e.waitUntil(
-    caches.open(CACHE).then(c => c.addAll(ASSETS))
-  );
-  self.skipWaiting();
+self.addEventListener('install', (event) => {
+  event.waitUntil(caches.open(CACHE).then((cache) => cache.addAll(CORE)));
 });
 
-// Activate: delete old caches
-self.addEventListener("activate", e => {
-  e.waitUntil(
-    caches.keys().then(keys =>
-      Promise.all(keys.filter(k => k !== CACHE).map(k => caches.delete(k)))
-    )
-  );
-  self.clients.claim();
+self.addEventListener('activate', (event) => {
+  event.waitUntil((async () => {
+    const keys = await caches.keys();
+    await Promise.all(keys.filter((key) => key.startsWith(PREFIX) && key !== CACHE).map((key) => caches.delete(key)));
+    await self.clients.claim();
+  })());
 });
 
-// Fetch: cache-first for assets, network-first for fonts
-self.addEventListener("fetch", e => {
-  const url = new URL(e.request.url);
-
-  // Google Fonts — network first, cache fallback
-  if (url.hostname.includes("fonts")) {
-    e.respondWith(
-      fetch(e.request)
-        .then(res => {
-          const clone = res.clone();
-          caches.open(CACHE).then(c => c.put(e.request, clone));
-          return res;
-        })
-        .catch(() => caches.match(e.request))
-    );
+self.addEventListener('fetch', (event) => {
+  const request = event.request;
+  const url = new URL(request.url);
+  if (request.method !== 'GET' || url.origin !== self.location.origin) return;
+  if (request.mode === 'navigate') {
+    event.respondWith(fetch(request).catch(async () =>
+      (await caches.open(CACHE)).match('./index.html') || Response.error()));
     return;
   }
-
-  // Everything else — cache first
-  e.respondWith(
-    caches.match(e.request).then(cached => {
-      if (cached) return cached;
-      return fetch(e.request).then(res => {
-        if (res.ok && e.request.method === "GET") {
-          const clone = res.clone();
-          caches.open(CACHE).then(c => c.put(e.request, clone));
-        }
-        return res;
-      });
-    })
-  );
+  if (!isLocalAsset(url)) return;
+  event.respondWith((async () => {
+    const cache = await caches.open(CACHE);
+    const cached = await cache.match(request);
+    if (cached) return cached;
+    const response = await fetch(request);
+    if (response.ok && response.type === 'basic') await cache.put(request, response.clone());
+    return response;
+  })());
 });

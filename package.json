@@ -1,0 +1,20 @@
+{
+  "name": "pomodoro-study",
+  "version": "2.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "vite --host 127.0.0.1",
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview --host 127.0.0.1",
+    "test": "node --test",
+    "check": "tsc --noEmit && node --check pomodoro-pwa/sw.js && node --check pomodoro-pwa/src/app.js && node --check pomodoro-pwa/src/model.js && node --check pomodoro-pwa/src/services.js && node --check pomodoro-pwa/src/youtube.js && node --check server.mjs"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "devDependencies": {
+    "typescript": "^7.0.2",
+    "vite": "^8.3.5"
+  }
+}

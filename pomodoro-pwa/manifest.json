@@ -1,35 +1,33 @@
 {
   "id": "./",
-  "name": "Pomodoro Timer",
+  "name": "Pomodoro Study",
   "short_name": "Pomodoro",
-  "description": "Foco total, um tomate de cada vez.",
+  "description": "Seu tempo, com intenção. Foco, plano de estudos e progresso no seu ritmo.",
   "lang": "pt-BR",
-  "start_url": "./",
+  "start_url": "./#foco",
   "scope": "./",
   "display": "standalone",
-  "display_override": [
-    "standalone",
-    "minimal-ui"
-  ],
-  "background_color": "#0f0700",
-  "theme_color": "#1a0a00",
-  "orientation": "portrait-primary",
-  "categories": [
-    "productivity",
-    "utilities"
-  ],
+  "background_color": "#f7f6f2",
+  "theme_color": "#203e35",
+  "categories": ["productivity", "education"],
   "icons": [
     {
       "src": "icons/icon-192.png",
       "sizes": "192x192",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "any"
     },
     {
       "src": "icons/icon-512.png",
       "sizes": "512x512",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "any"
+    },
+    {
+      "src": "icons/maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
     }
   ]
 }
